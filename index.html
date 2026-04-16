@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ksenia Grebneva — Model</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --black: #0a0a0a; --white: #fafaf8; --grey: #b0aba3; --accent: #c8b89a; --nav-h: 64px; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--white); color: var(--black); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 300; overflow-x: hidden; }
+
+    /* CURSOR */
+    body { cursor: none; }
+    #cursor { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; width: 10px; height: 10px; background: var(--black); border-radius: 50%; transform: translate(-50%,-50%); transition: width .25s, height .25s, background .25s, border-color .25s; }
+    #cursor.big { width: 44px; height: 44px; background: transparent; border: 1px solid var(--black); }
+    #cursor.white { background: var(--white) !important; border-color: var(--white) !important; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: var(--nav-h); display: flex; align-items: center; justify-content: space-between; padding: 0 48px; mix-blend-mode: difference; }
+    .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 300; letter-spacing: .18em; color: var(--white); text-decoration: none; text-transform: uppercase; }
+    .nav-links { display: flex; gap: 36px; list-style: none; }
+    .nav-links a { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--white); text-decoration: none; opacity: .7; transition: opacity .2s; }
+    .nav-links a:hover { opacity: 1; }
+
+    /* HERO */
+    #hero { position: relative; width: 100vw; height: 100vh; overflow: hidden; background: var(--black); }
+    .hero-img {
+      position: absolute; inset: 0;
+      background: url('hero.jpg') center/cover no-repeat;
+      opacity: .9; transform: scale(1.04);
+      animation: heroIn 1.6s cubic-bezier(.22,1,.36,1) forwards;
+    }
+    @keyframes heroIn { from { opacity:0; transform:scale(1.1); } to { opacity:.9; transform:scale(1.04); } }
+    .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(10,10,10,.5)); }
+    .hero-text { position: absolute; bottom: 64px; left: 48px; color: var(--white); animation: fadeUp 1.2s 0.6s cubic-bezier(.22,1,.36,1) both; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+    .hero-name { font-family: 'Cormorant Garamond', serif; font-size: clamp(52px,8vw,110px); font-weight: 300; line-height: .95; letter-spacing: -.01em; }
+    .hero-name em { font-style: italic; }
+    .hero-sub { margin-top: 16px; font-size: 11px; letter-spacing: .28em; text-transform: uppercase; opacity: .65; }
+    .scroll-hint { position: absolute; bottom: 28px; right: 48px; display: flex; align-items: center; gap: 12px; color: var(--white); font-size: 9px; letter-spacing: .22em; text-transform: uppercase; opacity: .5; animation: fadeUp 1.4s 1s both; }
+    .scroll-line { width: 40px; height: 1px; background: var(--white); animation: lineGrow 1.5s 1.5s cubic-bezier(.22,1,.36,1) both; transform-origin: left; }
+    @keyframes lineGrow { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+
+    /* SECTION LABEL */
+    .section-label { font-size: 9px; letter-spacing: .28em; text-transform: uppercase; color: var(--grey); margin-bottom: 40px; }
+
+    /* PORTFOLIO */
+    #portfolio { padding: 120px 48px; }
+    .portfolio-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 64px; }
+    .portfolio-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(36px,5vw,64px); font-weight: 300; line-height: 1; }
+    .portfolio-title em { font-style: italic; color: var(--grey); }
+    .filter-bar { display: flex; gap: 28px; }
+    .filter-btn { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; background: none; border: none; cursor: none; color: var(--grey); padding: 0; transition: color .2s; }
+    .filter-btn.active, .filter-btn:hover { color: var(--black); }
+
+    /* GRID */
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; margin-bottom: 16px; }
+    .grid-item { overflow: hidden; position: relative; background: #e8e4de; cursor: none; opacity: 0; transform: translateY(30px); transition: opacity .7s, transform .7s; }
+    .grid-item.visible { opacity: 1; transform: translateY(0); }
+
+    /* Row 1 — 2 wide + 3 narrow + 2 wide, all portrait */
+    .row1 .grid-item:nth-child(1) { grid-column: 1/8; aspect-ratio: 2/3; }
+    .row1 .grid-item:nth-child(2) { grid-column: 8/13; aspect-ratio: 2/3; }
+    .row1 .grid-item:nth-child(3) { grid-column: 1/5; aspect-ratio: 2/3; }
+    .row1 .grid-item:nth-child(4) { grid-column: 5/10; aspect-ratio: 2/3; }
+    .row1 .grid-item:nth-child(5) { grid-column: 10/13; aspect-ratio: 2/3; }
+    .row1 .grid-item:nth-child(6) { grid-column: 1/6; aspect-ratio: 2/3; }
+    .row1 .grid-item:nth-child(7) { grid-column: 6/13; aspect-ratio: 2/3; }
+    /* Row 2 — all portrait */
+    .row2 .grid-item:nth-child(1) { grid-column: 1/5; aspect-ratio: 2/3; }
+    .row2 .grid-item:nth-child(2) { grid-column: 5/9; aspect-ratio: 2/3; }
+    .row2 .grid-item:nth-child(3) { grid-column: 9/13; aspect-ratio: 2/3; }
+    .row2 .grid-item:nth-child(4) { grid-column: 1/7; aspect-ratio: 2/3; }
+    .row2 .grid-item:nth-child(5) { grid-column: 7/13; aspect-ratio: 2/3; }
+    /* Row 3 — all portrait */
+    .row3 .grid-item:nth-child(1) { grid-column: 1/5; aspect-ratio: 2/3; }
+    .row3 .grid-item:nth-child(2) { grid-column: 5/9; aspect-ratio: 2/3; }
+    .row3 .grid-item:nth-child(3) { grid-column: 9/13; aspect-ratio: 2/3; }
+    /* Polaroids */
+    .row-polaroid .grid-item { grid-column: span 4; aspect-ratio: 2/3; }
+
+    .grid-item img { width: 100%; height: 100%; object-fit: cover; transition: transform .9s cubic-bezier(.25,1,.5,1); display: block; }
+    .grid-item:hover img { transform: scale(1.05); }
+    .grid-item-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px 20px 18px; background: linear-gradient(transparent, rgba(10,10,10,.6)); color: var(--white); opacity: 0; transition: opacity .3s; }
+    .grid-item:hover .grid-item-info { opacity: 1; }
+    .grid-item-info span { font-size: 9px; letter-spacing: .2em; text-transform: uppercase; }
+
+    /* Video cards inside grid */
+    .video-card { position: relative; aspect-ratio: 2/3; overflow: hidden; background: var(--black); cursor: none; opacity: 0; transform: translateY(20px); transition: opacity .6s, transform .6s; }
+    .video-card.visible { opacity: 1; transform: translateY(0); }
+    .video-thumb { width: 100%; height: 100%; object-fit: cover; opacity: .75; transition: opacity .4s, transform .7s; display: block; }
+    .video-card:hover .video-thumb { opacity: .5; transform: scale(1.04); }
+    .play-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(.85); width: 60px; height: 60px; border: 1px solid rgba(255,255,255,.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; opacity: 0; transition: opacity .3s, transform .3s; }
+    .video-card:hover .play-btn { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+    .video-label { position: absolute; bottom: 20px; left: 20px; font-size: 9px; letter-spacing: .2em; color: rgba(255,255,255,.6); text-transform: uppercase; }
+
+    /* STATS */
+    #stats { border-top: 1px solid #e0dbd4; display: grid; grid-template-columns: repeat(4,1fr); padding: 0 48px; }
+    .stat-item { padding: 64px 0; border-right: 1px solid #e0dbd4; }
+    .stat-item:last-child { border-right: none; }
+    .stat-item:not(:first-child) { padding-left: 48px; }
+    .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 300; line-height: 1; margin-bottom: 8px; }
+    .stat-value em { font-style: italic; color: var(--grey); font-size: 36px; }
+    .stat-label { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--grey); }
+
+    /* ABOUT */
+    #about { padding: 120px 48px; border-top: 1px solid #e0dbd4; }
+    .about-text { max-width: 680px; }
+    .about-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(32px,4vw,56px); font-weight: 300; line-height: 1.05; margin-bottom: 32px; }
+    .about-title em { font-style: italic; }
+    .about-body { font-size: 14px; line-height: 1.85; color: #555; max-width: 420px; margin-bottom: 48px; }
+    .about-specs { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 48px; }
+    .spec-key { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--grey); margin-bottom: 4px; }
+    .spec-val { font-size: 14px; }
+
+    /* CONTACT */
+    #contact { background: var(--black); color: var(--white); padding: 120px 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; }
+    .contact-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px,5vw,72px); font-weight: 300; line-height: .95; margin-bottom: 40px; }
+    .contact-title em { font-style: italic; color: var(--accent); }
+    .contact-links { display: flex; flex-direction: column; gap: 16px; }
+    .contact-link { display: flex; align-items: center; gap: 16px; font-size: 12px; letter-spacing: .15em; text-transform: uppercase; color: var(--grey); text-decoration: none; transition: color .2s; }
+    .contact-link:hover { color: var(--white); }
+    .contact-link-line { flex: 1; height: 1px; background: #2a2a2a; }
+    .contact-footer { grid-column: 1/-1; padding-top: 80px; border-top: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
+    .footer-copy { font-size: 9px; letter-spacing: .18em; color: #333; text-transform: uppercase; }
+    .footer-socials a { font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: #333; text-decoration: none; transition: color .2s; }
+    .footer-socials a:hover { color: var(--white); }
+
+    /* LIGHTBOX + CAROUSEL */
+    #lightbox { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(8,8,8,.97); flex-direction: column; }
+    #lightbox.open { display: flex; }
+    .lb-bar { display: flex; align-items: center; justify-content: space-between; padding: 24px 48px; flex-shrink: 0; }
+    #lb-counter { font-size: 9px; letter-spacing: .28em; color: rgba(255,255,255,.35); text-transform: uppercase; }
+    #lb-close { font-size: 10px; letter-spacing: .28em; color: rgba(255,255,255,.4); cursor: none; transition: color .2s; text-transform: uppercase; }
+    #lb-close:hover { color: #fff; }
+    .lb-stage { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+    #lb-img { max-width: 88vw; max-height: 88vh; object-fit: contain; display: block; transition: opacity .2s; }
+    #lb-video { display: none; max-width: 88vw; max-height: 88vh; }
+    #lb-video.active { display: block; }
+    .lb-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 56px; height: 56px; border: 1px solid rgba(255,255,255,.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.5); font-size: 20px; cursor: none; transition: border-color .2s, color .2s, background .2s; background: rgba(255,255,255,.03); }
+    .lb-arrow:hover { border-color: rgba(255,255,255,.7); color: #fff; background: rgba(255,255,255,.08); }
+    #lb-prev { left: 32px; }
+    #lb-next { right: 32px; }
+    .lb-arrow.hidden { opacity: 0; pointer-events: none; }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+      nav { padding: 0 24px; }
+      .nav-links { display: none; }
+      #portfolio, #video, #about, #contact { padding-left: 24px; padding-right: 24px; }
+      .portfolio-header { flex-direction: column; align-items: flex-start; gap: 24px; }
+      .grid { grid-template-columns: 1fr 1fr !important; gap: 8px; }
+      .grid-item { grid-column: auto !important; aspect-ratio: 3/4 !important; }
+      .video-grid { grid-template-columns: 1fr; }
+      #stats { grid-template-columns: 1fr 1fr; }
+      .stat-item:nth-child(2n) { border-right: none; }
+      #contact { grid-template-columns: 1fr; }
+      .contact-footer { flex-direction: column; gap: 24px; }
+      .lb-arrow { display: none; }
+      .lb-bar { padding: 20px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <div class="lb-bar">
+    <span id="lb-counter"></span>
+    <span id="lb-close">Close ✕</span>
+  </div>
+  <div class="lb-stage">
+    <button class="lb-arrow hidden" id="lb-prev">&#8592;</button>
+    <img id="lb-img" src="" alt="" />
+    <video id="lb-video" controls playsinline></video>
+    <button class="lb-arrow hidden" id="lb-next">&#8594;</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Ksenia Grebneva</a>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════
+  HERO IMAGE
+  Put your main photo in the same folder as this file.
+  Then open this file in a text editor and change:
+    url('hero.jpg')  →  url('YOUR_FILENAME.jpg')
+  in the CSS at the top (search for "hero.jpg")
+════════════════════════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-img"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-text">
+    <h1 class="hero-name">Ksenia<br><em>Grebneva</em></h1>
+    <p class="hero-sub">Model — Seoul, South Korea</p>
+  </div>
+  <div class="scroll-hint"><div class="scroll-line"></div>Scroll</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+  PORTFOLIO
+  HOW TO ADD YOUR PHOTOS:
+  1. Put image files in the same folder as this HTML file
+  2. For each grid-item, set:
+       data-src="yourphoto.jpg"   ← opens in lightbox
+       <img src="yourphoto.jpg">  ← thumbnail in grid
+  3. Change the label inside <span> to describe the shot
+  4. To show a photo ONLY in Polaroids tab:
+       change  data-category="all"  →  data-category="polaroid"
+  5. To show in BOTH tabs:
+       change  data-category="all"  →  data-category="both"
+
+  HOW TO ADD MORE PHOTOS:
+  Copy any <div class="grid-item"> block and paste it in the grid.
+  The layout will reflow automatically on mobile.
+
+  HOW TO REMOVE A SLOT:
+  Delete the entire <div class="grid-item">...</div> block.
+════════════════════════════════════════════════════════ -->
+<section id="portfolio">
+  <div class="portfolio-header">
+    <div>
+      <p class="section-label">Selected Work</p>
+      <h2 class="portfolio-title">Port<em>folio</em></h2>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active">All</button>
+      <button class="filter-btn">Polaroids</button>
+      <button class="filter-btn">Video</button>
+    </div>
+  </div>
+
+  <!-- ROW 1: 2 tall left + 3 medium + 2 wide bottom -->
+  <div class="grid row1">
+    <div class="grid-item" data-category="all" data-src="photo1.jpg">
+      <img src="photo1.jpg" alt="Editorial" loading="lazy" />
+      <div class="grid-item-info"><span>Editorial</span></div>
+    </div>
+    <div class="grid-item" data-category="all" data-src="photo2.jpg">
+      <img src="photo2.jpg" alt="Campaign" loading="lazy" />
+      <div class="grid-item-info"><span>Campaign</span></div>
+    </div>
+    <div class="grid-item" data-category="all" data-src="photo3.jpg">
+      <img src="photo3.jpg" alt="Editorial" loading="lazy" />
+      <div class="grid-item-info"><span>Editorial</span></div>
+    </div>
+    <div class="grid-item" data-category="all" data-src="photo4.jpg">
+      <img src="photo4.jpg" alt="Campaign" loading="lazy" />
+      <div class="grid-item-info"><span>Campaign</span></div>
+    </div>
+    <div class="grid-item" data-category="all" data-src="photo5.jpg">
+      <img src="photo5.jpg" alt="Editorial" loading="lazy" />
+      <div class="grid-item-info"><span>Editorial</span></div>
+    </div>
+    <div class="grid-item" data-category="all" data-src="photo6.jpg">
+      <img src="photo6.jpg" alt="Campaign" loading="lazy" />
+      <div class="grid-item-info"><span>Campaign</span></div>
+    </div>
+    <div class="grid-item" data-category="all" data-src="photo7.jpg">
+      <img src="photo7.jpg" alt="Editorial" loading="lazy" />
+      <div class="grid-item-info"><span>Editorial</span></div>
+    </div>
+  </div>
+
+  <!-- ROW 2: 3 portraits + 2 landscape -->
+  <div class="grid row2">
+    <div class="grid-item" data-category="all" data-src="photo8.jpg">
+      <img src="photo8.jpg" alt="Editorial" loading="lazy" />
+      <div class="grid-item-info"><span>Editorial</span></div>
+    </div>
+    <div class="grid-item" data-category="all" data-src="photo9.jpg">
+      <img src="photo9.jpg" alt="Campaign" loading="lazy" />
+      <div class="grid-item-info"><span>Campaign</span></div>
+    </div>
+    <div class="grid-item" data-category="all" data-src="photo10.jpg">
+      <img src="photo10.jpg" alt="Editorial" loading="lazy" />
+      <div class="grid-item-info"><span>Editorial</span></div>
+    </div>
+    <div class="grid-item" data-category="all" data-src="photo11.jpg">
+      <img src="photo11.jpg" alt="Campaign" loading="lazy" />
+      <div class="grid-item-info"><span>Campaign</span></div>
+    </div>
+    <div class="grid-item" data-category="all" data-src="photo12.jpg">
+      <img src="photo12.jpg" alt="Editorial" loading="lazy" />
+      <div class="grid-item-info"><span>Editorial</span></div>
+    </div>
+  </div>
+
+  <!-- ROW 3: 3 equal columns -->
+  <div class="grid row3">
+    <div class="grid-item" data-category="all" data-src="photo13.jpg">
+      <img src="photo13.jpg" alt="Editorial" loading="lazy" />
+      <div class="grid-item-info"><span>Editorial</span></div>
+    </div>
+    <div class="grid-item" data-category="all" data-src="photo14.jpg">
+      <img src="photo14.jpg" alt="Campaign" loading="lazy" />
+      <div class="grid-item-info"><span>Campaign</span></div>
+    </div>
+    <div class="grid-item" data-category="all" data-src="photo15.jpg">
+      <img src="photo15.jpg" alt="Editorial" loading="lazy" />
+      <div class="grid-item-info"><span>Editorial</span></div>
+    </div>
+  </div>
+
+  <!-- ROW 4: 3 more equal columns (photo16–18) -->
+  <div class="grid row3">
+    <div class="grid-item" data-category="all" data-src="photo16.jpg">
+      <img src="photo16.jpg" alt="Editorial" loading="lazy" />
+      <div class="grid-item-info"><span>Editorial</span></div>
+    </div>
+    <div class="grid-item" data-category="all" data-src="photo17.jpg">
+      <img src="photo17.jpg" alt="Campaign" loading="lazy" />
+      <div class="grid-item-info"><span>Campaign</span></div>
+    </div>
+    <div class="grid-item" data-category="all" data-src="photo18.jpg">
+      <img src="photo18.jpg" alt="Editorial" loading="lazy" />
+      <div class="grid-item-info"><span>Editorial</span></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+    POLAROIDS
+    These are hidden by default. Click "Polaroids" tab to see them.
+    Add your polaroid photos here by replacing polaroid1.jpg etc.
+    Add more by copying a grid-item block.
+  ════════════════════════════════════════════════════════ -->
+  <div class="grid row-polaroid">
+    <div class="grid-item" data-category="polaroid" data-src="polaroid1.jpg">
+      <img src="polaroid1.jpg" alt="Polaroid" loading="lazy" />
+      <div class="grid-item-info"><span>Polaroid</span></div>
+    </div>
+    <div class="grid-item" data-category="polaroid" data-src="polaroid2.jpg">
+      <img src="polaroid2.jpg" alt="Polaroid" loading="lazy" />
+      <div class="grid-item-info"><span>Polaroid</span></div>
+    </div>
+    <div class="grid-item" data-category="polaroid" data-src="polaroid3.jpg">
+      <img src="polaroid3.jpg" alt="Polaroid" loading="lazy" />
+      <div class="grid-item-info"><span>Polaroid</span></div>
+    </div>
+    <div class="grid-item" data-category="polaroid" data-src="polaroid4.jpg">
+      <img src="polaroid4.jpg" alt="Polaroid" loading="lazy" />
+      <div class="grid-item-info"><span>Polaroid</span></div>
+    </div>
+    <div class="grid-item" data-category="polaroid" data-src="polaroid5.jpg">
+      <img src="polaroid5.jpg" alt="Polaroid" loading="lazy" />
+      <div class="grid-item-info"><span>Polaroid</span></div>
+    </div>
+    <div class="grid-item" data-category="polaroid" data-src="polaroid6.jpg">
+      <img src="polaroid6.jpg" alt="Polaroid" loading="lazy" />
+      <div class="grid-item-info"><span>Polaroid</span></div>
+    </div>
+  <!-- VIDEO ROW — "Video" tab -->
+  <div class="grid" id="video-all">
+    <div class="video-card" data-category="video" data-video="video1.mp4" style="grid-column:1/13; aspect-ratio:16/9;">
+      <img class="video-thumb" src="video1-thumb.jpg" alt="Film 1" loading="lazy" />
+      <div class="play-btn">&#9654;</div>
+      <div class="video-label">Commercials</div>
+    </div>
+  </div>
+
+  <!-- VIDEO ROW — "Polaroids" tab (add your videos here later) -->
+  <!-- To add a polaroid video: copy the video-card block below,
+       set data-category="polaroid" and data-video="yourfile.mp4" -->
+
+</section>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="stat-item">
+    <div class="stat-value">174<em>cm</em></div>
+    <div class="stat-label">Height</div>
+  </div>
+  <div class="stat-item" style="padding-left:48px">
+    <div class="stat-value">82<em>/</em>60<em>/</em>88</div>
+    <div class="stat-label">Bust / Waist / Hips</div>
+  </div>
+  <div class="stat-item" style="padding-left:48px">
+    <div class="stat-value">38</div>
+    <div class="stat-label">Shoe Size</div>
+  </div>
+  <div class="stat-item" style="padding-left:48px">
+    <div class="stat-value">Blue<em> / </em>Brown</div>
+    <div class="stat-label">Eyes / Hair</div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-text">
+    <p class="section-label">About</p>
+    <h2 class="about-title">The<br><em>Story</em></h2>
+    <p class="about-body">
+      Scouted in Moscow ten years ago, I haven't stopped moving since. My path has taken me from Paris with Cartier to Japan with Uniqlo, and through Korea with Fila. Along the way I picked up the languages too: I now speak Russian, English, French and Korean. Recently I've been pursuing acting, landing my first role in a Korean film in 2026. Off set, you'll find me at CrossFit, Pilates or halfway up a rock climbing gym, because movement in all its forms is simply who I am. Nice to meet you!
+    </p>
+    <div class="about-specs">
+      <div class="spec-item">
+        <div class="spec-key">Based In</div>
+        <div class="spec-val">Seoul, South Korea</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-key">Nationality</div>
+        <div class="spec-val">Russia</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-key">Experience</div>
+        <div class="spec-val">10 Years</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-left">
+    <p class="section-label" style="color:#555">Get in Touch</p>
+    <h2 class="contact-title">Let's<br><em>Work</em></h2>
+    <div class="contact-links">
+      <a href="https://instagram.com/ksenia_grebneva" target="_blank" class="contact-link">
+        @ksenia_grebneva
+        <div class="contact-link-line"></div>
+      </a>
+    </div>
+  </div>
+  <div></div>
+  <div class="contact-footer">
+    <span class="footer-copy">© 2026 Ksenia Grebneva. All rights reserved.</span>
+    <div class="footer-socials">
+      <a href="https://instagram.com/ksenia_grebneva" target="_blank">Instagram</a>
+    </div>
+  </div>
+</section>
+
+<script>
+  // ── Cursor
+  const cursor = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top  = e.clientY + 'px';
+  });
+  document.querySelectorAll('a, button, .grid-item, .video-card').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+  });
+  document.querySelectorAll('#video, #contact').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('white'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('white'));
+  });
+
+  // ── Scroll reveal
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.grid-item, .video-card').forEach(el => io.observe(el));
+
+  // ── CAROUSEL LIGHTBOX
+  const lb       = document.getElementById('lightbox');
+  const lbImg    = document.getElementById('lb-img');
+  const lbVideo  = document.getElementById('lb-video');
+  const lbPrev   = document.getElementById('lb-prev');
+  const lbNext   = document.getElementById('lb-next');
+  const lbCounter= document.getElementById('lb-counter');
+
+  let items = [];   // [{src, type}]
+  let idx   = 0;
+
+  function buildItems() {
+    const imgs = [...document.querySelectorAll('.grid-item[data-src]')]
+      .filter(el => el.style.display !== 'none')
+      .map(el => ({ src: el.dataset.src, type: 'image' }));
+    const vids = [...document.querySelectorAll('.video-card[data-video]')]
+      .filter(el => el.style.display !== 'none')
+      .map(el => ({ src: el.dataset.video, type: 'video' }));
+    return [...imgs, ...vids];
+  }
+
+  function show(i) {
+    idx = i;
+    const item = items[i];
+    lbCounter.textContent = (items.length > 1) ? `${i + 1} / ${items.length}` : '';
+    lbPrev.classList.toggle('hidden', i === 0);
+    lbNext.classList.toggle('hidden', i === items.length - 1);
+
+    if (item.type === 'video') {
+      lbVideo.pause();
+      lbImg.style.display = 'none';
+      lbVideo.style.display = 'block'; lbVideo.classList.add('active');
+      lbVideo.src = item.src;
+      lbVideo.play().catch(() => {});
+    } else {
+      lbVideo.pause(); lbVideo.src = '';
+      lbVideo.style.display = 'none'; lbVideo.classList.remove('active');
+      lbImg.style.display = 'block';
+      lbImg.style.opacity = '0';
+      lbImg.src = item.src;
+      lbImg.onload = () => { lbImg.style.opacity = '1'; };
+    }
+  }
+
+  function open(startIdx) {
+    items = buildItems();
+    document.body.style.overflow = 'hidden';
+    lb.classList.add('open');
+    show(startIdx);
+  }
+
+  function close() {
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+    lbVideo.pause(); lbVideo.src = '';
+    lbImg.src = '';
+  }
+
+  // Grid image clicks
+  document.querySelectorAll('.grid-item[data-src]').forEach(item => {
+    item.addEventListener('click', () => {
+      const visibleImgs = [...document.querySelectorAll('.grid-item[data-src]')]
+        .filter(el => el.style.display !== 'none');
+      open(visibleImgs.indexOf(item));
+    });
+  });
+
+  // Video card clicks
+  document.querySelectorAll('.video-card[data-video]').forEach((card, i) => {
+    card.addEventListener('click', () => {
+      const imgCount = [...document.querySelectorAll('.grid-item[data-src]')]
+        .filter(el => el.style.display !== 'none').length;
+      open(imgCount + i);
+    });
+  });
+
+  lbPrev.addEventListener('click', () => { if (idx > 0) show(idx - 1); });
+  lbNext.addEventListener('click', () => { if (idx < items.length - 1) show(idx + 1); });
+  document.getElementById('lb-close').addEventListener('click', close);
+  lb.addEventListener('click', e => { if (e.target === lb || e.target === lbImg) close(); });
+
+  document.addEventListener('keydown', e => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowLeft'  && idx > 0) show(idx - 1);
+    if (e.key === 'ArrowRight' && idx < items.length - 1) show(idx + 1);
+  });
+
+  // Swipe (mobile)
+  let tx = 0;
+  lb.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  lb.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) < 40) return;
+    if (dx < 0 && idx < items.length - 1) show(idx + 1);
+    if (dx > 0 && idx > 0) show(idx - 1);
+  });
+
+  // ── Filter
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.textContent.trim().toLowerCase();
+      // filter photos
+      document.querySelectorAll('.grid-item').forEach(item => {
+        const cat = item.dataset.category || 'all';
+        let show;
+        if (f === 'all')       show = cat === 'all' || cat === 'both';
+        if (f === 'polaroids') show = cat === 'polaroid' || cat === 'both';
+        if (f === 'video')     show = false;
+        item.style.display = show ? '' : 'none';
+      });
+      // filter videos
+      document.querySelectorAll('.video-card').forEach(card => {
+        const cat = card.dataset.category || 'video';
+        let show;
+        if (f === 'all')       show = false;
+        if (f === 'polaroids') show = cat === 'polaroid';
+        if (f === 'video')     show = cat === 'video';
+        card.style.display = show ? '' : 'none';
+      });
+    });
+  });
+
+  // Default: show only "all" photos, hide everything else
+  document.querySelectorAll('.grid-item').forEach(el => {
+    const cat = el.dataset.category || 'all';
+    el.style.display = (cat === 'all' || cat === 'both') ? '' : 'none';
+  });
+  document.querySelectorAll('.video-card').forEach(el => {
+    el.style.display = 'none';
+  });
+
+  // ── Parallax
+  window.addEventListener('scroll', () => {
+    document.querySelector('.hero-img').style.transform =
+      `scale(1.04) translateY(${window.scrollY * 0.25}px)`;
+  });
+</script>
+</body>
+</html>
